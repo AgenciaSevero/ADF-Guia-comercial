@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Objeciones ADF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE work tool for a clinic's patient-advisors: calm, warm, fast to scan mid-chat
+   IDEA the clinic's chairside reference card: pick what the patient said, get the move and the WhatsApp text
+   PICTURE the working navigator itself (objection list + script card), opening on the most common objection
+   COLOUR white ground, plum #4b1d52 dominant band, blush support, coral #e5483d accent for actions
+   TYPE Outfit display + Figtree text
+   LAYOUT laptop: plum header with personalisation, then list | card; phone: header, select list, card */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#150e18);--ink:light-dark(#1d1420,#f3e9f1);--mut:light-dark(#655a69,#b9aabd);
+--plum:light-dark(#4b1d52,#2a1330);--plum2:light-dark(#6d3277,#c79bd1);--blush:light-dark(#fbeef1,#24172a);
+--line:light-dark(#eadfe8,#38283d);--coral:light-dark(#d93b30,#ff7a6e);--card:light-dark(#ffffff,#1c1320);
+--sel:light-dark(#4b1d52,#6a3374);--ok:light-dark(#1f7a4d,#5fd39a);--warn:light-dark(#9a6200,#f2c35b);--no:light-dark(#b42318,#ff8a80)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:24px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Figtree,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Outfit,Figtree,sans-serif;letter-spacing:-.02em;line-height:1.1;margin:0}
+h1{font-size:clamp(30px,4.4vw,46px);text-wrap:balance}
+h2{font-size:clamp(24px,3vw,32px);text-wrap:balance;margin-bottom:6px}
+h3{font-size:19px}
+p{margin:0 0 10px}
+.band{padding:clamp(24px,4vw,52px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.top{background:var(--plum);color:#fff}
+.top .wrap{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:end}
+.top p{color:#eadbec;max-width:56ch;margin-top:12px}
+.me{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.med summary{cursor:pointer;font-weight:600;font-size:15px;color:#fff;padding:10px 0;min-height:44px}
+.med[open] summary{margin-bottom:6px}
+.me label{font-size:13px;color:#eadbec;display:block}
+.me input{width:100%;margin-top:4px;font:16px Figtree,sans-serif;padding:9px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.18);color:#fff}
+.me input::placeholder{color:#cbb6cf}
+.me .full{grid-column:1/-1;font-size:13px;color:#d9c5dc}
+.me a{color:#fff}
+.tool{display:grid;grid-template-columns:300px minmax(0,1fr);gap:28px;align-items:start}
+.side{position:sticky;top:16px}
+.search{width:100%;font:16px Figtree,sans-serif;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);margin-bottom:12px}
+.grp{font-size:13px;color:var(--mut);margin:14px 0 6px;font-weight:600}
+.ob{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;font:500 15px/1.3 Figtree,sans-serif;color:var(--ink);background:transparent;border:0;border-radius:10px;padding:10px 12px;min-height:44px;cursor:pointer;align-items:center}
+.ob:hover{background:var(--blush)}
+.ob[aria-current=true]{background:var(--sel);color:#fff}
+.ob small{font-size:12px;white-space:nowrap;color:var(--coral);font-weight:700}
+.ob[aria-current=true] small{color:#ffd2cd}
+.ob:focus-visible,.btn:focus-visible,.search:focus-visible,.me input:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+.pick{display:none;width:100%;font:16px Figtree,sans-serif;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);margin-bottom:14px}
+.card{border:1px solid var(--line);border-radius:18px;background:var(--card);overflow:hidden}
+.say{background:var(--blush);padding:22px 24px}
+.say .q{font-family:Outfit,sans-serif;font-size:clamp(24px,3vw,34px);line-height:1.12;letter-spacing:-.02em;font-weight:600}
+.say .also{color:var(--mut);font-size:15px;margin-top:8px}
+.body{padding:20px 24px 24px;display:grid;gap:20px}
+.why{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.lbl{font-size:13px;font-weight:700;color:var(--plum2);margin-bottom:4px}
+.data{border-left:3px solid var(--coral);padding-left:12px;font-size:15px}
+.viva{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.st{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14.5px}
+.st b{display:flex;gap:8px;align-items:center;font-family:Outfit,sans-serif;font-size:16px;margin-bottom:3px}
+.st b i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--sel);color:#fff;display:grid;place-items:center;font-size:13px;flex:none}
+.msgs{display:grid;gap:12px}
+.msg{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.msg header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}
+.bubble{padding:14px 16px;white-space:pre-wrap;background:light-dark(#f4fbf3,#18221b);font-size:15.5px}
+.bubble mark{background:light-dark(#ffe1dc,#5a2420);color:inherit;border-radius:4px;padding:0 3px}
+.btn{font:600 14px Figtree,sans-serif;border:0;border-radius:9px;padding:10px 14px;min-height:40px;cursor:pointer;background:var(--coral);color:#fff;white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--plum2);border:1px solid var(--line)}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;font-size:15px}
+.avoid{color:var(--no)}
+.note{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;background:var(--blush);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;color:var(--warn);border:1px solid currentColor;border-radius:99px;padding:1px 8px;margin-left:6px}
+.alt{background:var(--blush)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(11em,1fr));gap:14px;margin:18px 0 26px}
+.kpi b{display:block;font-family:Outfit,sans-serif;font-size:clamp(34px,4vw,46px);line-height:1;color:var(--plum2);letter-spacing:-.02em}
+.kpi span{font-size:14.5px;color:var(--mut)}
+.cols{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:36px}
+.bars{display:grid;gap:9px}
+.bar{display:grid;grid-template-columns:minmax(0,11em) minmax(0,1fr) 3.2em;gap:10px;align-items:center;font-size:14.5px}
+.bar .t{height:22px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:var(--plum2);border-radius:6px}
+.bar.money .t i{background:var(--coral)}
+.bar em{font-style:normal;text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.find{display:grid;gap:12px;font-size:15.5px}
+.find div{border-top:1px solid var(--line);padding-top:10px}
+.find b{color:var(--coral)}
+.steps4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:18px}
+.big{font-family:Outfit,sans-serif;font-size:56px;line-height:1;color:var(--coral);font-weight:700}
+.light{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+.light>div{border-radius:14px;padding:16px;border:1px solid var(--line);background:var(--card)}
+.light h3{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.dot{width:14px;height:14px;border-radius:50%;flex:none}
+.light ul{margin:0;padding-left:18px;font-size:15px}.light li{margin-bottom:6px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px;margin-top:16px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--mut)}
+.src{font-size:13px;color:var(--mut);margin-top:22px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+@media(max-width:900px){.tool{grid-template-columns:minmax(0,1fr)}.side{position:static}.list{display:none}.pick{display:block}.viva,.steps4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.top .wrap,.cols,.why,.pair,.light{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:480px){.me{grid-template-columns:1fr}.viva,.steps4{grid-template-columns:1fr}.say,.body{padding-left:16px;padding-right:16px}.bar{grid-template-columns:minmax(0,8.5em) minmax(0,1fr) 3em}}
+</style>
+</head>
+<body>
+
+<section class="band top">
+  <div class="wrap">
+    <div>
+      <h1>Objeciones de precio: qué responder cuando el paciente se está yendo</h1>
+      <p>Elija lo que le dijo el paciente y copie el mensaje. Cada respuesta sigue el método VIVA y sale de lo que muestran las notas del CRM de pacientes B2C.</p>
+    </div>
+    <details class="med" id="med" open><summary>Personalizar mensajes: paciente, cita y valoración</summary>
+    <form class="me" id="me" autocomplete="off">
+      <label>Paciente<input id="f-pac" placeholder="Ej. Sra. Luz"></label>
+      <label>Fecha y hora de la cita<input id="f-cita" placeholder="Ej. jueves 27, 10:00 a. m."></label>
+      <label>Valor de la valoración<input id="f-val" placeholder="Ej. $___"></label>
+      <label>Forma de pago aprobada<input id="f-pago" placeholder="Solo si el doctor la aprobó"></label>
+      <label class="full">Rango de inversión aprobado (opcional)<input id="f-rango" placeholder="Déjelo vacío hasta que el doctor lo apruebe"></label>
+      <div class="full">Se llenan solos en los mensajes y quedan guardados en este navegador. Lo que falte aparece resaltado.</div>
+    </form></details>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap tool">
+    <aside class="side">
+      <input class="search" id="q" type="search" placeholder="Buscar: caro, lejos, valoración…" aria-label="Buscar objeción">
+      <select class="pick" id="pick" aria-label="Elegir objeción"></select>
+      <nav class="list" id="list" aria-label="Objeciones"></nav>
+    </aside>
+    <article class="card" id="card" aria-live="polite"></article>
+  </div>
+</section>
+
+<section class="band alt" id="crm">
+  <div class="wrap">
+    <h2>Por dinero se pierde más de la mitad, y por distancia uno de cada cuatro</h2>
+    <p>Revisamos las 773 notas del embudo B2C entre el 9 de junio y el 20 de noviembre de 2026. Solo 122 dicen por qué se fue el paciente, porque la mayoría termina en "no responde".</p>
+    <div class="kpis">
+      <div class="kpi"><b>93%</b><span>de las 866 oportunidades B2C están en Perdidos (802)</span></div>
+      <div class="kpi"><b>48%</b><span>de quienes llenaron el formulario quiere el tratamiento "inmediatamente"</span></div>
+      <div class="kpi"><b>1 de 2</b><span>dice que le faltan varios dientes o toda una arcada</span></div>
+      <div class="kpi"><b>1</b><span>sola nota registra que se ofreció una forma de pago</span></div>
+    </div>
+    <div class="cols">
+      <div>
+        <h3>Razón de pérdida, en las 122 notas que la registran</h3>
+        <div class="bars" id="bars" style="margin-top:14px"></div>
+        <p class="src">En coral, las razones de dinero: 64 de 122 (52%).</p>
+      </div>
+      <div class="find">
+        <h3>Lo que más pesa en la conversación</h3>
+        <div><b>Precio sin contexto, silencio.</b> Por lo menos 14 pacientes dejaron de contestar justo después de recibir el precio del tratamiento o de la valoración.</div>
+        <div><b>Negar el precio también los aleja.</b> Un paciente "se disgustó" porque no le dieron una cifra aproximada. Otro dijo que no quería perder el tiempo en una valoración sin una referencia.</div>
+        <div><b>La valoración con costo sorprende.</b> 22 notas tienen que ver con ese costo, y un paciente dijo haber visto publicidad de valoración gratis.</div>
+        <div><b>El seguimiento se queda sin fecha.</b> 42% de las notas termina en "no responde", y muchas en "se comunica cuando esté listo".</div>
+        <div><b>Las notas no cuentan qué pasó.</b> 22% son el mensaje enviado copiado y pegado. Muy pocas dicen qué objetó el paciente.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="viva">
+  <div class="wrap">
+    <h2>Método VIVA: cuatro pasos antes de mandar cualquier precio</h2>
+    <p style="max-width:70ch">Se basa en el modelo LAER de manejo de objeciones (escuchar, reconocer, explorar, responder), adaptado a WhatsApp. La regla de oro del manual sigue igual: ninguna conversación termina en un precio, siempre termina en una acción con fecha.</p>
+    <div class="steps4">
+      <div><div class="big">V</div><h3>Validar</h3><p>Reconozca la preocupación sin discutir. "Le entiendo, es una inversión importante."</p></div>
+      <div><div class="big">I</div><h3>Indagar</h3><p>Averigüe qué hay detrás antes de responder. "¿Qué le pesa más: el valor total o la forma de pago?"</p></div>
+      <div><div class="big">V</div><h3>Valor</h3><p>Responda a esa preocupación con lo que la resuelve: dientes fijos en tres días, plan completo, abono de la valoración.</p></div>
+      <div><div class="big">A</div><h3>Acción</h3><p>Cierre con un paso y una fecha: valoración, llamada de 5 minutos o "le escribo el jueves".</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band alt" id="ofrecer">
+  <div class="wrap">
+    <h2>Qué se puede ofrecer: para que nadie prometa lo que no hay</h2>
+    <p style="max-width:70ch">En la reunión del 20 de noviembre quedó pendiente definir qué opciones de pago se pueden ofrecer desde el primer contacto. Hasta entonces, el amarillo solo se usa con visto bueno del doctor.</p>
+    <div class="light">
+      <div><h3><span class="dot" style="background:var(--ok)"></span>Siempre</h3><ul>
+        <li>El valor de la valoración se descuenta del tratamiento si lo inicia.</li>
+        <li>Hay alternativas de pago, sin detallar condiciones.</li>
+        <li>El tratamiento se puede organizar por etapas.</li>
+        <li>Valoración virtual para quien vive fuera de Bogotá.</li>
+        <li>Puede venir acompañado a la valoración.</li>
+        <li>Llamada corta con la doctora para explicar su caso.</li></ul></div>
+      <div><h3><span class="dot" style="background:var(--warn)"></span>Con visto bueno del doctor</h3><ul>
+        <li>Rango de inversión por tipo de caso.</li>
+        <li>Condiciones de pago concretas. En el CRM aparece una vez: 60% al iniciar y el resto en cuotas de 1 millón mensual.</li>
+        <li>Revisión previa de radiografías o tomografías.</li>
+        <li>Promociones vigentes.</li>
+        <li>Los mensajes clínicos de esta guía: implantes por estructura, prótesis fija en tres días, poco hueso sin injerto.</li></ul></div>
+      <div><h3><span class="dot" style="background:var(--no)"></span>Nunca</h3><ul>
+        <li>Descuento por decidir hoy.</li>
+        <li>Precio por diente o por implante suelto.</li>
+        <li>Hablar mal de otra clínica.</li>
+        <li>Prometer un resultado o un precio sin valoración.</li>
+        <li>Mandar el precio solo, sin pregunta ni siguiente paso.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="frases">
+  <div class="wrap">
+    <h2>Frases que alejan al paciente, y qué decir en su lugar</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>En lugar de</th><th>Mejor</th></tr></thead>
+      <tbody id="frases-b"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="band alt" id="anotar">
+  <div class="wrap cols">
+    <div>
+      <h2>Cómo dejar la nota en el CRM</h2>
+      <p>Una nota debe contar qué pasó, para que cualquiera pueda retomar el caso y para medir qué objeciones se repiten. El mensaje enviado ya queda en Conversaciones, así que no hace falta pegarlo.</p>
+      <div class="note" id="tpl">Objeción: no le alcanza | Respuesta: ofrecí etapas y llamada con la Dra. | Reacción: acepta llamada | Próximo paso: llamar el jueves 10 a. m.</div>
+      <p style="margin-top:10px"><button class="btn" type="button" data-copy="tpl">Copiar formato</button></p>
+    </div>
+    <div>
+      <h3>Al mover un contacto en el embudo</h3>
+      <ul style="padding-left:18px">
+        <li>Si pasa a Perdidos, elija siempre la razón de abandono: dinero, valoración, distancia, más adelante, no responde o datos errados.</li>
+        <li>"Déjeme pensarlo" no es Perdido: deje tarea con fecha.</li>
+        <li>Si se vuelve paciente, márquelo como ganado con el valor de la venta.</li>
+        <li>Si el número no existe o no tiene WhatsApp, anótelo como datos errados para que la agencia lo revise.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <p class="src">Fuentes: export de la Lista B2C General de LeadWon (891 contactos, 20 nov 2026) y su última nota por contacto; tablero del embudo B2C; Manual de objeciones de precio de ADF; guiones de video del blog de ADF; reunión de seguimiento del 20 nov 2026. Los mensajes clínicos (tres días, poco hueso) vienen de los artículos del blog de ADF y deben validarse con el doctor.</p>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+{
+const OBJ=[
+{id:'pide-precio',g:'Antes de la valoración',l:'"¿Cuánto cuesta?"',q:'"¿Cuánto vale? Solo dígame el precio."',also:'La primera pregunta de casi todos.',
+ why:'Todavía no es un "no". El paciente quiere saber si le alcanza antes de invertir tiempo. Si le contestamos "no damos precios" se siente evadido, y si le mandamos la cifra sola hace cuentas y se va.',
+ data:'Al menos 14 pacientes dejaron de contestar justo después de recibir un precio. Otros se molestaron porque no les dieron ninguna referencia.',tag:'',
+ v:'"Claro, es lo primero que uno quiere saber."',i:'¿Cuántos dientes le faltan y hace cuánto los perdió?',va:'Explique de qué depende el valor: hueso, estructura, plan completo.',a:'Ofrezca una llamada de 5 minutos con la doctora.',
+ m:[{t:'Primera respuesta',x:'Hola {n} 😊 Claro que sí, es lo primero que uno quiere saber. Para no darle una cifra que después cambie, cuénteme dos cosas: ¿cuántos dientes le faltan más o menos y hace cuánto los perdió?\n\nCon eso le explico qué tratamiento suele aplicar en un caso como el suyo y cómo se calcula el valor.'},
+    {t:'Si insiste',x:'Le entiendo perfectamente. El valor depende del hueso que tenga y de la estructura que necesite, que no siempre es un implante por cada diente. Por eso dos personas a las que les faltan 4 dientes pueden tener presupuestos muy distintos.\n\n¿Le parece si la Dra. María José lo llama 5 minutos hoy y le orienta sobre su caso y la inversión?'}],
+ no:'"No damos precios por este medio." · Mandar la cifra sola, sin pregunta.',yes:'Una pregunta sobre su caso y un siguiente paso.',
+ note:'Objeción: pidió precio | Respuesta: pregunté por su caso (__ dientes, hace __) | Próximo paso: __ el __'},
+{id:'insiste-rango',g:'Antes de la valoración',l:'"Deme al menos un aproximado"',q:'"Pero deme al menos un aproximado."',also:'Ya preguntó dos o tres veces y se está molestando.',
+ why:'Seguir negando la cifra rompe la confianza. Lo que sí se puede dar con certeza es el valor de la valoración, el abono y, si el doctor lo aprueba, un rango por tipo de caso.',
+ data:'Un paciente "se disgustó porque no se le dio el precio aproximado" y no volvió a responder. Otro dijo que no quería que le hicieran perder el tiempo con una valoración sin una referencia de precio.',tag:'',
+ v:'"Tiene toda la razón en pedir una referencia."',i:'Pregunte si le preocupa el total o cómo pagarlo.',va:'Dé lo que sí es seguro: valoración, abono, plan por escrito.',a:'Llamada con la doctora o cita esta semana.',
+ m:[{t:'Con rango aprobado',if:'rango',x:'Tiene toda la razón en pedir una referencia. Para casos como el suyo, la inversión suele estar entre {rango}. El valor exacto se lo damos por escrito en la valoración, porque depende del hueso y de la estructura que necesite.\n\nLa valoración cuesta {val} y se descuenta completa de su tratamiento si lo inicia con nosotros. ¿Le reservo un espacio esta semana?'},
+    {t:'Sin rango aprobado',ifnot:'rango',x:'Tiene toda la razón en pedir una referencia. Lo que sí le puedo dar hoy con certeza: la valoración cuesta {val}, se descuenta completa de su tratamiento si lo inicia con nosotros, y sale con su plan y presupuesto por escrito. Así sabe exactamente cuánto es antes de decidir nada.\n\n¿Prefiere que la doctora lo llame primero 5 minutos o le reservo la cita?'}],
+ no:'Repetir "no manejamos tarifas fijas" por tercera vez.',yes:'Dar lo que sí es seguro y pasar a la llamada.',
+ note:'Objeción: insistió en aproximado | Respuesta: valoración + abono (+ rango) | Próximo paso: __'},
+{id:'valoracion-costo',g:'Antes de la valoración',l:'"¿La valoración tiene costo?"',q:'"¿La valoración se paga? No sabía que tenía costo."',also:'También: "Ahorita no tengo para la valoración."',
+ why:'Lo que el paciente entiende es que va a pagar por una cotización. Hay que mostrarla como lo que es: un diagnóstico con el especialista que, además, se descuenta del tratamiento.',
+ data:'22 notas tienen que ver con el costo de la valoración, y 21 de esos pacientes están hoy en Perdidos. Uno dijo: "no sabía que tenía costo".',tag:'22',
+ v:'"Sí, tiene un valor, y le cuento por qué."',i:'¿Ya se ha hecho alguna valoración antes?',va:'Diagnóstico + plan por escrito + se descuenta del tratamiento.',a:'Proponga un día concreto.',
+ m:[{t:'Al preguntar',x:'Sí, la valoración tiene un valor de {val}, y le cuento por qué vale la pena: no es una cotización, es una consulta completa con el especialista, con su diagnóstico y su plan de tratamiento con presupuesto por escrito.\n\nY si decide hacer el tratamiento con nosotros, ese valor se descuenta completo. ¿Qué día le queda mejor esta semana?'},
+    {t:'Si se quedó callado',x:'Hola {n} 😊 Le cuento algo que a muchos pacientes les ayuda a decidir: el valor de la valoración se descuenta completo de su tratamiento si lo inicia con nosotros. Y aunque decida no hacerlo, se lleva su diagnóstico y su plan por escrito.\n\n¿Le guardo un espacio para el {dia}?'}],
+ no:'Dar el valor y nada más.',yes:'Valor + qué incluye + abono + día concreto.',
+ note:'Objeción: costo de valoración | Respuesta: abono + plan por escrito | Próximo paso: __'},
+{id:'valoracion-gratis',g:'Antes de la valoración',l:'"En otro lado es gratis"',q:'"En otro lado la valoración es gratis."',also:'O: "Vi publicidad de valoración gratis."',
+ why:'Comparan con consultas gratis que muchas veces son de venta. No se discute ni se habla mal de nadie: se diferencia por lo que incluye y por quién la hace.',
+ data:'Un paciente dijo haber visto publicidad de valoración gratis. Si vuelve a pasar, pídale el pantallazo y envíelo a la agencia para revisar el anuncio.',tag:'',
+ v:'"Es muy válido comparar."',i:'¿Qué le ofrecieron en esa valoración?',va:'Especialista + plan por escrito + abono.',a:'Agendar para que compare con información completa.',
+ m:[{t:'Respuesta',x:'Es muy válido comparar 😊 Le cuento la diferencia: nuestra valoración la hace directamente el especialista en implantología corticobasal, incluye su diagnóstico y su plan con presupuesto por escrito, y su valor se descuenta del tratamiento si lo inicia con nosotros.\n\nDonde vaya, le recomiendo preguntar quién lo valora y si sale con un plan por escrito. ¿Le reservo su espacio para que compare con información completa?'}],
+ no:'"Allá es gratis porque es de mala calidad."',yes:'"Le recomiendo comparar quién lo valora y qué se lleva."',
+ note:'Objeción: valoración gratis en otro lado | Respuesta: diferencia + abono | Próximo paso: __'},
+{id:'por-diente',g:'Antes de la valoración',l:'"Por 4 dientes me salen millones"',q:'"Si un implante vale tanto, por 4 dientes me salen como 10 millones."',also:'El paciente multiplica por diente y concluye que no le alcanza.',
+ why:'Se dijo en la reunión: hacen la cuenta por diente y se descartan solos. Pero en casos de varios dientes no siempre va un implante por cada diente, así que esa cuenta casi nunca es real.',
+ data:'1 de cada 2 contactos B2C dice que le faltan varios dientes o toda una arcada, así que esta cuenta va a aparecer seguido.',tag:'',
+ v:'"Entiendo la cuenta que está haciendo."',i:'¿Cuántos dientes le faltan y en qué zona?',va:'Explique que se cotiza el plan completo y no se multiplica por diente.',a:'Llamada o valoración para tener el número real.',
+ m:[{t:'Respuesta',x:'Entiendo la cuenta que está haciendo, y le explico por qué no funciona así cuando son varios dientes: no siempre se pone un implante por cada diente. Muchas veces varios dientes van fijos sobre una misma estructura, y con la técnica corticobasal se puede trabajar incluso con poco hueso, muchas veces sin injertos.\n\nPor eso el valor se calcula por el plan completo. ¿Cuántos dientes le faltan y en qué zona? Así le oriento mejor.'}],
+ no:'Dar el precio de un implante suelto.',yes:'Hablar del plan completo y preguntar por su caso.',
+ note:'Objeción: cuenta por diente | Respuesta: plan completo | Próximo paso: __'},
+{id:'lejos',g:'Antes de la valoración',l:'"Me queda muy lejos"',q:'"Me queda muy lejos." / "Vivo en otra ciudad."',also:'Villavicencio, Huila, Cúcuta, Medellín, sur de Bogotá…',
+ why:'El miedo real es la cantidad de viajes y de días perdidos. La carga inmediata responde eso: pocas visitas, no meses. La valoración virtual sí se ha ofrecido, pero sin explicar qué gana el paciente.',
+ data:'31 notas hablan de distancia. Se ofreció valoración virtual al menos 6 veces y ninguna nota registra que se haya hecho.',tag:'31',
+ v:'"Le entiendo, el desplazamiento cuenta."',i:'¿Desde dónde viajaría y qué días puede?',va:'Dientes fijos dentro de los tres días tras la cirugía: pocas visitas.',a:'Virtual primero o una fecha que le rinda el viaje.',
+ m:[{t:'Vive en otra ciudad',x:'Le entiendo, y justamente por eso muchos pacientes de fuera de Bogotá nos escogen: con la carga inmediata, los dientes fijos se colocan dentro de los tres días siguientes a la cirugía. El tratamiento se concentra en pocos días, no en meses de viajes.\n\nPara empezar sin viajar podemos hacer su valoración virtual. ¿Le cuento cómo funciona?'},
+    {t:'En Bogotá, pero lejos',x:'Le entiendo, el tiempo y el desplazamiento cuentan. La ventaja es que no son citas cada semana durante meses: después de la cirugía, los dientes fijos se colocan dentro de los tres días siguientes. Son pocas visitas y bien planeadas.\n\n¿Qué día y hora le queda más fácil para que la primera visita le rinda?'}],
+ no:'Ofrecer la virtual sin decir qué gana.',yes:'Pocas visitas + virtual como primer paso.',
+ note:'Objeción: distancia (ciudad: __) | Respuesta: carga inmediata + virtual | Próximo paso: __'},
+{id:'radiografia',g:'Antes de la valoración',l:'"Le mando la radiografía"',q:'"Le mando la radiografía y me dice cuánto."',also:'Manda Rx o tomografía y pide precio con eso.',
+ why:'Es una señal de compra: el paciente ya está invirtiendo esfuerzo. Si solo le contestamos que la imagen no alcanza, se enfría.',
+ data:'Al menos tres pacientes mandaron radiografía o tomografía y dejaron de contestar después de la respuesta.',tag:'',
+ v:'"¡Gracias por enviarla, nos ayuda mucho!"',i:'¿Es reciente? ¿Qué le dijeron donde se la tomaron?',va:'La doctora la revisa y le orienta.',a:'Llamada de la doctora y cita de una vez.',
+ m:[{t:'Respuesta',x:'¡Gracias por enviarla, eso nos ayuda mucho! La doctora la va a revisar para orientarle sobre qué tipo de tratamiento podría aplicar en su caso. Para el valor exacto sí necesitamos verlo en la valoración, porque hay cosas que la imagen no muestra.\n\n¿Le parece si después de revisarla la doctora lo llama 5 minutos y de una vez le reservamos la cita?'}],
+ no:'"Eso no sirve para darle precio."',yes:'Agradecer, revisar y llamar.',
+ note:'Envió Rx/tomografía | Respuesta: revisión + llamada | Próximo paso: __'},
+{id:'muy-caro',g:'Después del precio',l:'"Está muy caro"',q:'"Está muy caro."',also:'"Veo que los costos están más elevados que las otras opciones."',
+ why:'Casi nunca significa "no". Detrás suele haber una de tres cosas: no entiende qué incluye, lo compara con algo distinto o no puede pagarlo de una vez. Antes de defender el precio, averigüe cuál es.',
+ data:'42 notas hablan del precio del tratamiento o del presupuesto, y 41 de esos pacientes están en Perdidos. Es la razón de pérdida número uno.',tag:'42',
+ v:'"Le entiendo, es una inversión importante."',i:'¿Le pesa el valor total o la forma de pagarlo?',va:'Qué incluye y cómo compararlo completo.',a:'Valoración para comparar con números reales.',
+ m:[{t:'Primero, averigüe',x:'Le entiendo, es una inversión importante y está bien pensarlo. Para ayudarle mejor: ¿qué le pesa más, el valor total o la forma de pagarlo?'},
+    {t:'Si es el valor total',x:'Le cuento qué incluye, para que lo compare completo: especialista en implantología corticobasal, implantes de una sola pieza anclados en el hueso más firme, y dientes fijos dentro de los tres días siguientes a la cirugía, sin meses con la boca incompleta y muchas veces sin injertos.\n\nLe recomiendo comparar así, con injertos, provisionales y tiempos incluidos. ¿Revisamos su caso en la valoración para que compare con números reales?'},
+    {t:'Si es la forma de pago',x:'Gracias por contarme 😊 Para eso tenemos alternativas de pago{pago}, y el tratamiento se puede organizar por etapas, empezando por lo más importante. ¿Le parece si la doctora le explica en una llamada corta cómo quedaría en su caso?'}],
+ no:'"Es caro, pero vale la pena." · Defender el precio de entrada.',yes:'Preguntar primero qué le pesa.',
+ note:'Objeción: muy caro (total / forma de pago) | Respuesta: __ | Próximo paso: __'},
+{id:'no-alcanza',g:'Después del precio',l:'"No me alcanza"',q:'"No tengo el dinero ahora."',also:'"No me apunto porque soy de escasos recursos."',
+ why:'Si no le ofrecemos una salida, la conversación se acaba ahí. Etapas, alternativas de pago y una valoración agendada con tiempo para planear son salidas reales.',
+ data:'De todas las notas de dinero, solo una registra que se ofreció una forma de pago (60% al iniciar y cuotas de 1 millón).',tag:'',
+ v:'"Gracias por contarme con sinceridad."',i:'¿Cuánto podría destinar al mes, más o menos?',va:'Etapas + alternativas de pago + abono de la valoración.',a:'Llamada sobre opciones o fecha de valoración para planear.',
+ m:[{t:'Ofrezca una salida',x:'Gracias por contarme con tanta sinceridad 😊 Justamente para eso tenemos alternativas de pago{pago}, y el tratamiento también se puede organizar por etapas, empezando por lo más importante.\n\n¿Le parece si la doctora le explica las opciones en una llamada corta?'},
+    {t:'Si no puede ni la valoración',x:'Le entiendo. Una idea: agende la valoración para una fecha en que le quede más cómodo. Así ya tiene su diagnóstico y el valor exacto para planear con tiempo, y recuerde que ese valor se descuenta del tratamiento.\n\n¿Qué mes le serviría? ¿{mes}?'}],
+ no:'"Listo, cuando tenga el dinero nos escribe."',yes:'Etapas, pago y una fecha.',
+ note:'Objeción: no le alcanza | Respuesta: etapas / pago | Próximo paso: __'},
+{id:'mas-barato',g:'Después del precio',l:'"En otro lado es más barato"',q:'"En otro lugar me lo dejan más barato."',also:'A veces manda el presupuesto de otro consultorio.',
+ why:'Si le manda otro presupuesto, está pidiendo ayuda para decidir. No se discute ni se habla mal de nadie: se le enseña a comparar lo mismo.',
+ data:'Un paciente envió el presupuesto de otro consultorio. Es una oportunidad para mostrar qué incluye el nuestro.',tag:'',
+ v:'"Qué bueno que esté comparando."',i:'¿Qué incluye ese presupuesto?',va:'Cinco cosas para comparar lo mismo.',a:'Que comparta el presupuesto o venga a valoración.',
+ m:[{t:'Respuesta',x:'Qué bueno que esté comparando, es lo correcto 😊 Para que la comparación sea justa, revise cinco cosas: qué tipo de implante es, quién hace el procedimiento, si necesita injerto, cuánto tiempo estará sin dientes fijos y si incluye controles.\n\nSi quiere, compártame el presupuesto que le dieron y le explico qué incluiría el nuestro. ¿Le parece?'}],
+ no:'"Allá es más barato porque es de mala calidad."',yes:'"Comparemos lo mismo: implante, especialista, tiempos."',
+ note:'Objeción: más barato en otro lado | Respuesta: comparar 5 puntos | Próximo paso: __'},
+{id:'descuento',g:'Después del precio',l:'"¿Me hace descuento?"',q:'"¿Me hacen algún descuento?"',also:'',
+ why:'Prometer un descuento que no existe sale caro. Se responde con forma de pago y solo con promociones que el doctor tenga vigentes.',
+ data:'En la reunión se pidió no ofrecer promociones sin confirmar que se pueden dar.',tag:'',
+ v:'"Gracias por preguntar."',i:'¿Es por el total o por cómo pagarlo?',va:'Forma de pago y promociones vigentes confirmadas.',a:'Contarle las opciones.',
+ m:[{t:'Respuesta',x:'Gracias por preguntar 😊 Nuestros valores ya incluyen especialista, materiales y controles. Lo que sí podemos es ayudarle con la forma de pago{pago}, y si hay alguna promoción vigente que aplique a su caso, con gusto se la aplicamos.\n\n¿Le cuento las opciones?'}],
+ no:'"Le hago un descuento si decide hoy."',yes:'"Le ayudamos con la forma de pago."',
+ note:'Pidió descuento | Respuesta: forma de pago | Próximo paso: __'},
+{id:'pensarlo',g:'Después del precio',l:'"Déjeme pensarlo"',q:'"Déjeme pensarlo y yo les aviso."',also:'"Se comunica cuando esté listo."',
+ why:'"Déjeme pensarlo" sin una fecha acordada casi siempre termina en Perdidos. Primero averigüe qué duda le queda y después deje una fecha.',
+ data:'Muchas notas terminan en "se comunica cuando esté listo" o "lo tendrá presente", sin fecha. Casi todos esos contactos están hoy en Perdidos.',tag:'',
+ v:'"Claro, es una decisión importante."',i:'¿Es el valor, el tiempo o el procedimiento?',va:'Resuelva esa duda ahora mismo.',a:'Acuerde el día en que le escribe.',
+ m:[{t:'Averigüe la duda',x:'Claro, es una decisión importante. Para ayudarle a pensarlo con toda la información: ¿hay algo que no le haya quedado claro? ¿Es el valor, el tiempo del tratamiento o el procedimiento en sí?'},
+    {t:'Deje la fecha',x:'Por supuesto 😊 ¿Le parece si le escribo el {dia} para saber cómo va y resolver lo que le haya quedado pendiente?'}],
+ no:'"Bueno, cualquier cosa me avisa."',yes:'"¿Le escribo el jueves?"',
+ note:'Objeción: lo va a pensar (duda: __) | Próximo paso: escribir el __'},
+{id:'familia',g:'Después del precio',l:'"Lo consulto en familia"',q:'"Tengo que consultarlo con mi pareja / mis hijos."',also:'A veces el tratamiento es para un padre o un familiar.',
+ why:'Quien paga o decide no está en la conversación. Invítelo a la valoración.',
+ data:'Varios contactos escriben por un familiar ("es para mi padre", "es para su suegra").',tag:'',
+ v:'"Es muy importante decidirlo en familia."',i:'¿Quién más participa en la decisión?',va:'Que escuchen juntos al especialista.',a:'Un día que les sirva a los dos.',
+ m:[{t:'Respuesta',x:'Claro, es muy importante decidirlo en familia 😊 Si quiere, pueden venir juntos a la valoración y escuchar directamente del especialista el diagnóstico y las opciones.\n\n¿Qué día les queda mejor a los dos?'}],
+ no:'"Listo, me avisa qué decidieron."',yes:'Invitar a quien decide.',
+ note:'Objeción: decide con familia (quién: __) | Próximo paso: __'},
+{id:'mas-adelante',g:'Después del precio',l:'"Más adelante"',q:'"Ahora no puedo, más adelante."',also:'Por viaje, cirugía, trabajo o simplemente "por ahora no".',
+ why:'Respete el momento, pero no lo deje abierto. Si la razón es de salud, nada de urgencia: deje una fecha para retomar.',
+ data:'12 notas: "más adelante" por viaje, cirugía o trabajo. Y aun así, 48% marcó en el formulario que quería el tratamiento "inmediatamente".',tag:'12',
+ v:'"Lo entendemos."',i:'¿Qué tendría que pasar para que sea un buen momento?',va:'Si espera, el hueso se sigue reabsorbiendo; el diagnóstico ayuda a planear.',a:'Una fecha concreta para retomar.',
+ m:[{t:'Por tiempo o trabajo',x:'Lo entendemos 😊 Solo le comparto algo: cuando se espera mucho, el hueso se sigue reabsorbiendo y el tratamiento puede volverse más complejo. Conocer hoy su diagnóstico le permite planear con tiempo, aunque inicie después.\n\n¿Para qué fecha le queda bien que le escribamos?'},
+    {t:'Por salud',x:'Primero su recuperación 😊 ¿Le parece si le escribimos en {mes} para saber cómo sigue y, si ya está listo, buscamos una fecha?'}],
+ no:'Dejarlo en "nos avisa".',yes:'Una fecha para retomar.',
+ note:'Objeción: más adelante (motivo: __) | Próximo paso: escribir en __'},
+{id:'visto',g:'Silencio y asistencia',l:'Lo dejó en visto',q:'Recibió el precio y dejó de contestar.',also:'Hasta tres mensajes, cada uno con un motivo nuevo.',
+ why:'Mandar el mismo mensaje tres veces se lee como presión. Cada seguimiento tiene que traer algo nuevo: una duda resuelta, una forma de pago, una salida amable.',
+ data:'327 notas (42%) terminan en "no responde". Los seguimientos que quedan pegados en el CRM repiten casi siempre la misma presentación del doctor.',tag:'327',
+ v:'Sin reclamos: asuma que se ocupó.',i:'Pregunte si le quedó una duda.',va:'Cada mensaje trae algo nuevo.',a:'Siempre una pregunta fácil de responder.',
+ m:[{t:'1. A las 24–48 horas',x:'Hola {n} 😊 ¿Pudo revisar la información? Muchas personas me preguntan lo mismo después de ver el valor, así que si le quedó alguna duda se la resuelvo con gusto, por aquí o en una llamada de 5 minutos.'},
+    {t:'2. A los 5–7 días',x:'Hola {n} 👋 Le escribo por algo que quizás no le conté: el tratamiento se puede pagar con alternativas de pago{pago} y organizar por etapas. Además, la valoración se descuenta del tratamiento.\n\n¿Quiere que la doctora le explique cómo quedaría en su caso?'},
+    {t:'3. Último mensaje',x:'Hola {n}, no queremos ser insistentes 😊 Si en algún momento decide recuperar sus dientes fijos, aquí estaremos. ¿Prefiere que le escribamos más adelante, por ejemplo en {mes}?'}],
+ no:'Pegar el mismo mensaje de presentación.',yes:'Máximo tres, con un motivo nuevo cada vez.',
+ note:'Seguimiento __ de 3 | Motivo nuevo: __ | Próximo: __'},
+{id:'confirmar',g:'Silencio y asistencia',l:'Ya agendó: que no falte',q:'Agendó la valoración.',also:'El trabajo ahora es que llegue.',
+ why:'Contarle qué va a pasar en la valoración y pedirle que confirme ayuda a que llegue. Un paciente que respondió "SÍ" se comprometió por escrito.',
+ data:'En la reunión se habló de pacientes que agendan y no llegan, sin cancelar.',tag:'',
+ v:'Felicítelo por dar el paso.',i:'¿Viene solo o acompañado? ¿Trae exámenes?',va:'Qué va a pasar y qué se lleva.',a:'Pida una respuesta: "SÍ".',
+ m:[{t:'Al agendar',x:'¡Listo, {n}! Su valoración quedó agendada: {cita}. Le cuento qué va a pasar: el especialista revisa su caso, le explica sus opciones y usted sale con su plan y presupuesto por escrito. Si tiene radiografías o tomografías, tráigalas.\n\n¿Me confirma que le llegó este mensaje?'},
+    {t:'24 horas antes',x:'Hola {n} 😊 Le recordamos su valoración: {cita}. ¿Nos confirma su asistencia respondiendo SÍ? Si le surgió algo, avísenos y le buscamos otro espacio para que no pierda su turno.'},
+    {t:'El mismo día',x:'Buenos días {n}, hoy lo esperamos para su valoración ({cita}). Si necesita la ubicación o tiene algún inconveniente para llegar, escríbame por aquí.'}],
+ no:'Agendar y no volver a escribir hasta el día.',yes:'Tres toques: al agendar, 24 h antes y el día.',
+ note:'Cita: __ | Confirmación 24 h: sí / no | Próximo paso: __'},
+{id:'no-vino',g:'Silencio y asistencia',l:'No llegó o canceló',q:'No llegó a la cita, o canceló.',also:'Escríbale en las dos horas siguientes.',
+ why:'Quien agendó ya mostró interés. Escríbale el mismo día, sin reclamos, y ofrézcale una fecha concreta.',
+ data:'3 notas registran inasistencias o cancelaciones. Por lo dicho en la reunión, hay más que no quedaron anotadas.',tag:'',
+ v:'"Entendemos que surgen imprevistos."',i:'¿Está bien? ¿Qué pasó?',va:'Mantener su espacio y su avance.',a:'Proponer una nueva fecha concreta.',
+ m:[{t:'No llegó',x:'Hola {n}, lo esperábamos hoy para su valoración y queríamos saber si está bien 😊 Entendemos que a veces surgen imprevistos. ¿Le busco un nuevo espacio esta semana?'},
+    {t:'Canceló',x:'Gracias por avisar, {n} 😊 Para que no pierda el impulso, ¿le reservo de una vez otro espacio? Tengo disponibilidad el {dia}.'}],
+ no:'Moverlo a Perdidos sin reagendar.',yes:'Reagendar ese mismo día.',
+ note:'No asistió / canceló el __ | Motivo: __ | Nueva cita: __'}
+];
+const BARS=[['Precio del tratamiento',42,1],['Distancia',31,0],['Costo de la valoración',22,1],['Más adelante',12,0],['No interesado',9,0],['Comparando con otro lugar',3,0],['No asistió o canceló',3,0]];
+const FR=[['"No damos precios por este medio."','"Para darle un valor real necesito conocer su caso: ¿cuántos dientes le faltan?"'],['"No se manejan tarifas fijas." (por tercera vez)','"Lo que sí le puedo dar hoy con certeza es…" y la llamada con la doctora.'],['Mandar el precio solo.','El precio, lo que incluye y una pregunta.'],['"Es caro, pero vale la pena."','"¿Qué le pesa más: el valor total o la forma de pagarlo?"'],['"Allá es más barato porque es de mala calidad."','"Le recomiendo comparar implante, especialista y tiempos."'],['"Le hago un descuento si decide hoy."','"Le ayudamos con la forma de pago."'],['"Bueno, cualquier cosa me avisa."','"¿Le parece si le escribo el {dia}?"'],['"Gasto", "pagar".','"Inversión", "iniciar su tratamiento".'],['Pegar en la nota el mensaje enviado.','Anotar objeción, respuesta, reacción y próximo paso.']];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const F={pac:'',cita:'',val:'',pago:'',rango:''};
+try{Object.assign(F,JSON.parse(localStorage.getItem('adf-obj')||'{}'))}catch(e){}
+const DAYS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],MONTHS=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const now=new Date();const d2=new Date(now);d2.setDate(d2.getDate()+2);if(d2.getDay()===0)d2.setDate(d2.getDate()+1);
+const DIA=DAYS[d2.getDay()],MES=MONTHS[(now.getMonth()+1)%12];
+function fill(x,html){
+  const tok={n:F.pac.trim(),dia:DIA,mes:MES,
+    val:F.val.trim()||null,cita:F.cita.trim()||null,rango:F.rango.trim()||null,
+    pago:F.pago.trim()?', como '+F.pago.trim():''};
+  const miss={val:'el valor de la valoración',cita:'fecha y hora',rango:'el rango aprobado'};
+  let s=html?esc(x):x;
+  s=s.replace(/\{(\w+)\}/g,(m,k)=>{const v=tok[k];if(v===null)return html?'<mark>'+miss[k]+'</mark>':'('+miss[k]+')';return html?esc(v):v;});
+  return s.replace(/ {2,}/g,' ').replace(/ ([,!?.])/g,'$1').replace(/¡Listo,!/,'¡Listo!').replace(/avisar, 😊/,'avisar 😊');
+}
+function listHTML(term){
+  const t=(term||'').toLowerCase();let g='',h='';
+  OBJ.filter(o=>!t||(o.l+o.q+o.also+o.why).toLowerCase().includes(t)).forEach(o=>{
+    if(o.g!==g){g=o.g;h+='<div class="grp">'+esc(g)+'</div>';}
+    h+='<button class="ob" type="button" data-id="'+o.id+'"><span>'+esc(o.l)+'</span>'+(o.tag?'<small>'+o.tag+' notas</small>':'')+'</button>';
+  });
+  return h||'<p style="color:var(--mut);font-size:15px">Nada coincide. Pruebe con "caro", "lejos" o "valoración".</p>';
+}
+function cardHTML(o){
+  const ms=o.m.filter(m=>!(m.if&&!F[m.if].trim())&&!(m.ifnot&&F[m.ifnot].trim()));
+  return '<div class="say"><div class="q">'+esc(o.q)+'</div>'+(o.also?'<div class="also">'+esc(o.also)+'</div>':'')+'</div>'+
+  '<div class="body"><div class="why"><div><div class="lbl">Qué hay detrás</div><p>'+esc(o.why)+'</p></div><div class="data"><div class="lbl">Lo que vimos en el CRM</div>'+esc(o.data)+'</div></div>'+
+  '<div class="viva">'+[['V','Validar',o.v],['I','Indagar',o.i],['V','Valor',o.va],['A','Acción',o.a]].map(s=>'<div class="st"><b><i>'+s[0]+'</i>'+s[1]+'</b>'+esc(s[2])+'</div>').join('')+'</div>'+
+  '<div class="msgs">'+ms.map((m,i)=>'<div class="msg"><header><span>'+esc(m.t)+'</span><button class="btn" type="button" data-msg="'+i+'">Copiar</button></header><div class="bubble" id="b'+i+'">'+fill(m.x,true)+'</div></div>').join('')+'</div>'+
+  '<div class="pair"><div><div class="lbl avoid">Evite</div>'+esc(o.no)+'</div><div><div class="lbl" style="color:var(--ok)">Mejor</div>'+esc(o.yes)+'</div></div>'+
+  '<div><div class="lbl">Nota para el CRM</div><div class="note" id="nt">'+esc(o.note)+'</div><p style="margin-top:8px"><button class="btn ghost" type="button" data-copy="nt">Copiar nota</button></p></div></div>';
+}
+let cur=null;
+function show(id,push){
+  const o=OBJ.find(x=>x.id===id)||OBJ[0];cur=o;
+  $('#card').innerHTML=cardHTML(o);
+  document.querySelectorAll('.ob').forEach(b=>b.setAttribute('aria-current',b.dataset.id===o.id));
+  $('#pick').value=o.id;
+  if(push&&location.hash!=='#'+o.id){try{history.replaceState(null,'','#'+o.id)}catch(e){location.hash=o.id}}
+}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.k);toast.k=setTimeout(()=>e.classList.remove('on'),1600);}
+async function copy(text,el){
+  try{await navigator.clipboard.writeText(text);toast('Copiado. Péguelo en WhatsApp.');}
+  catch(e){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Texto seleccionado: cópielo con Ctrl+C');}
+}
+$('#list').innerHTML=listHTML('');
+$('#pick').innerHTML=OBJ.map(o=>'<option value="'+o.id+'">'+esc(o.g+' · '+o.l.replace(/"/g,''))+'</option>').join('');
+$('#bars').innerHTML=BARS.map(b=>'<div class="bar'+(b[2]?' money':'')+'"><span>'+b[0]+'</span><div class="t"><i style="width:'+(b[1]/42*100)+'%"></i></div><em>'+b[1]+'</em></div>').join('');
+function frases(){$('#frases-b').innerHTML=FR.map(f=>'<tr><td class="avoid">'+esc(f[0])+'</td><td>'+esc(f[1].replace('{dia}',DIA))+'</td></tr>').join('');}
+frases();
+['pac','cita','val','pago','rango'].forEach(k=>{const i=$('#f-'+k);i.value=F[k]||'';i.addEventListener('input',()=>{F[k]=i.value;try{localStorage.setItem('adf-obj',JSON.stringify(F))}catch(e){}if(cur)show(cur.id,false);});});
+$('#me').addEventListener('submit',e=>e.preventDefault());
+$('#list').addEventListener('click',e=>{const b=e.target.closest('.ob');if(b){show(b.dataset.id,true);if(innerWidth<900)$('#card').scrollIntoView({behavior:'smooth'});}});
+$('#pick').addEventListener('change',e=>show(e.target.value,true));
+$('#q').addEventListener('input',e=>{$('#list').innerHTML=listHTML(e.target.value);if(cur)document.querySelectorAll('.ob').forEach(b=>b.setAttribute('aria-current',b.dataset.id===cur.id));});
+document.addEventListener('click',e=>{
+  const m=e.target.closest('[data-msg]');
+  if(m&&cur){const ms=cur.m.filter(x=>!(x.if&&!F[x.if].trim())&&!(x.ifnot&&F[x.ifnot].trim()));copy(fill(ms[+m.dataset.msg].x,false),$('#b'+m.dataset.msg));return;}
+  const c=e.target.closest('[data-copy]');
+  if(c){const el=$('#'+c.dataset.copy);copy(el.innerText,el);}
+});
+if(innerWidth<600)$('#med').open=false;
+const start=()=>show((location.hash||'').slice(1)||'pide-precio',false);
+addEventListener('hashchange',start);
+start();
+}
+</script>
+</body>
+</html>
